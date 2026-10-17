@@ -1,0 +1,43 @@
+name: Build Safe Exam Browser AppImages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    - master
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'packaging/**'
+      - 'scripts/**'
+      - 'seb-linux-qt.pro'
+      - '.github/workflows/build-fedora-appimage.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-appimages:
+    name: Build Linux AppImages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies and build AppImages
+        shell: bash
+        run: |
+          chmod +x scripts/dependencies.sh scripts/build-release.sh
+          ./scripts/build-release.sh
+
+      - name: Upload AppImage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: safe-exam-browser-appimages
+          path: |
+            dist/*.AppImage
+          if-no-files-found: error
+          retention-days: 14
